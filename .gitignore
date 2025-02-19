@@ -1,0 +1,14 @@
+# Python
+*.pyc
+__pycache__/
+db.sqlite3
+.env
+
+# Node
+node_modules/
+
+# Logs
+*.log
+
+# Docker
+docker-compose.yml

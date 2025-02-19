@@ -1,0 +1,44 @@
+version: '3.8'
+services:
+  backend:
+    build: ./backend
+    command: python manage.py runserver 0.0.0.0:8000
+    volumes:
+      - ./backend:/app
+    env_file: .env
+    ports:
+      - "8000:8000"
+    depends_on:
+      - redis
+
+  celery:
+    build: ./backend
+    command: celery -A kick_virtual_pet worker --loglevel=info
+    volumes:
+      - ./backend:/app
+    env_file: .env
+    depends_on:
+      - redis
+
+  celery-beat:
+    build: ./backend
+    command: celery -A kick_virtual_pet beat --loglevel=info
+    volumes:
+      - ./backend:/app
+    env_file: .env
+    depends_on:
+      - redis
+
+  frontend:
+    build: ./frontend
+    command: npm start
+    volumes:
+      - ./frontend:/app
+    env_file: .env
+    ports:
+      - "3000:3000"
+
+  redis:
+    image: redis:6-alpine
+    ports:
+      - "6379:6379"
