@@ -1,11 +1,38 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
 
 const PetDashboard = () => {
   const [pet, setPet] = useState(null);
+  const [isUpdating, setIsUpdating] = useState(false);
+  const wsRef = useRef(null);
 
   useEffect(() => {
-    fetchPet();
+    const protocol = window.location.protocol === 'https:' ? 'wss' : 'ws';
+    const ws = new WebSocket(`${protocol}://localhost:8000/ws/pet/`);
+    wsRef.current = ws;
+    
+    ws.onopen = () => {
+      console.log("WebSocket connection established");
+    };
+    
+    ws.onmessage = (event) => {
+      console.log("Received WebSocket message:", event.data);
+      const updatedPet = JSON.parse(event.data);
+      setPet(updatedPet);
+      setIsUpdating(false);
+    };
+    
+    ws.onerror = (error) => {
+      console.error("WebSocket error:", error);
+    };
+    
+    ws.onclose = (e) => {
+      console.warn("WebSocket closed:", e);
+    };
+    
+    return () => {
+      ws.close();
+    };
   }, []);
 
   const fetchPet = async () => {
@@ -17,13 +44,18 @@ const PetDashboard = () => {
     }
   };
 
+  useEffect(() => {
+    fetchPet();
+  }, []);
+
   const handleCommand = async (command) => {
     try {
-      // IMPORTANT: Use the response from POST to update state
-      const res = await axios.post('http://localhost:8000/api/command/', { command });
-      setPet(res.data);
+      setIsUpdating(true);
+      await axios.post('http://localhost:8000/api/command/', { command });
+      // Do not update state here; wait for the WebSocket update.
     } catch (err) {
       console.error(err);
+      setIsUpdating(false);
     }
   };
 
@@ -37,6 +69,7 @@ const PetDashboard = () => {
       <p>Happiness: {pet.happiness}</p>
       <p>Health: {pet.health}</p>
       <p>Mood: {pet.mood}</p>
+      {isUpdating && <p style={{ color: "gray" }}>Processing command...</p>}
       <div style={{ marginTop: '20px' }}>
         <button onClick={() => handleCommand('!feed')}>Feed</button>
         <button onClick={() => handleCommand('!play')}>Play</button>

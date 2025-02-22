@@ -2,7 +2,7 @@ version: '3.8'
 services:
   backend:
     build: ./backend
-    command: python manage.py runserver 0.0.0.0:8000
+    command: daphne -b 0.0.0.0 -p 8000 kick_virtual_pet.asgi:application
     volumes:
       - ./backend:/app
     env_file: .env

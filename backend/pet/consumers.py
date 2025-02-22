@@ -1,18 +1,23 @@
-# backend/pet/consumers.py
-import json
-from channels.generic.websocket import AsyncWebsocketConsumer
+from channels.generic.websocket import AsyncJsonWebsocketConsumer
+import logging
 
-class PetConsumer(AsyncWebsocketConsumer):
+logger = logging.getLogger(__name__)
+
+class PetConsumer(AsyncJsonWebsocketConsumer):
     async def connect(self):
-        # Add this connection to the "pet_updates" group.
+        logger.info("WebSocket connect called")
         await self.channel_layer.group_add("pet_updates", self.channel_name)
         await self.accept()
+        logger.info("WebSocket connection accepted")
 
     async def disconnect(self, close_code):
-        # Remove from the group.
         await self.channel_layer.group_discard("pet_updates", self.channel_name)
+        logger.info("WebSocket disconnected")
 
-    # Receive messages from the group.
     async def pet_update(self, event):
-        data = event["data"]
-        await self.send(text_data=json.dumps(data))
+        try:
+            logger.info("Broadcasting pet update: %s", event["data"])
+            # This method is available on AsyncJsonWebsocketConsumer
+            await self.send_json(event["data"])
+        except Exception as e:
+            logger.exception("Error sending pet update")
