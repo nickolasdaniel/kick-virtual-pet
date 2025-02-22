@@ -9,11 +9,16 @@ https://docs.djangoproject.com/en/5.1/topics/settings/
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/5.1/ref/settings/
 """
-
+import os
 from pathlib import Path
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
+
+KICK_TEST_MODE = os.environ.get("KICK_TEST_MODE", "False") == "True"
+KICK_PUBLIC_KEY = os.environ.get("KICK_PUBLIC_KEY")
+
+BACKEND_COMMAND_ENDPOINT = os.environ.get('BACKEND_COMMAND_ENDPOINT', 'http://backend:8000/api/command/')
 
 
 # Quick-start development settings - unsuitable for production
@@ -39,11 +44,13 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'channels',
     'rest_framework',
+    'corsheaders',
     'pet',
     'kick_integration',
 ]
 
 MIDDLEWARE = [
+    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -131,6 +138,10 @@ STATIC_URL = 'static/'
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+CORS_ALLOWED_ORIGINS = [
+    "http://localhost:3000",
+]
 
 # CELERY CONFIG
 

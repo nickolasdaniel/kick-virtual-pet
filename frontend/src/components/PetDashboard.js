@@ -10,7 +10,7 @@ const PetDashboard = () => {
 
   const fetchPet = async () => {
     try {
-      const res = await axios.get('/api/pet/');
+      const res = await axios.get('http://localhost:8000/api/pet/');
       setPet(res.data[0]);
     } catch (err) {
       console.error(err);
@@ -20,7 +20,7 @@ const PetDashboard = () => {
   const handleCommand = async (command) => {
     try {
       // IMPORTANT: Use the response from POST to update state
-      const res = await axios.post('/api/command/', { command });
+      const res = await axios.post('http://localhost:8000/api/command/', { command });
       setPet(res.data);
     } catch (err) {
       console.error(err);
